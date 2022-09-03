@@ -71,7 +71,7 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
-if [ "$ONESHOT" -eq 1 ]; then
+if [ "$ONESHOT" = 1 ]; then
     tick
 else
     while true; do
