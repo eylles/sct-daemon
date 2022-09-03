@@ -4,37 +4,30 @@ a simple daemon for sct
 
 
 taken from [lobste.rs](https://lobste.rs/s/stlowv/sctd_minimal_daemon_for_sct) 
- and modified a little to be more flexible.
+ and the [dotfiles](https://github.com/qbit/dotfiles/blob/master/bin/sctd) of
+ the author, some small modifications for more flexibility.
 
 
 
-configuration is simple as we only really care about 3 variables, UPDATE which 
-determines how often the screen temperature is adjusted in seconds, default is 
-one minute (60 seconds), the color temperature through the day is determined by
- two variables, SUMAND and INCREMENT that are used in a rather simple equation
+configuration is simple as we only really care about 3 variables, INTERVAL which
+ determines how often the screen temperature is adjusted default is one minute,
+a suffix can be given for seconds (s), minutes (m) or hours (h), otherwise the
+time is assumed to be in seconds, the color temperature through the day is
+determined by two variables, TEMP_MIN and TEMP_MAX, the former will be the
+temperature at midnight, and the later will be the temperature at noon.
 
- ```
-sum = SUMAND + INCREMENT * TIME
- ```
-
- where time is given in minutes.
-
- the way you can think about it is that `SUMAND` represents the minimum 
- temperature while `INCREMENT` is the delta, with the default values of
- SUMAND=5060 and INCREMENT=2 the lowest screen temperature at midnight 
- will be 5060K, while the highest temperature at noon will be 6500K the 
- default of x11.
+arguments can be passed to produce debug output or run as a one shot.
 
 
-sct or xsct should be in most repos, xsct is reccomended on linux as is the 
-actively maintained one.
+sct or xsct should be in the repos of most distros, in the case of linux xsct
+ is reccomended as it is the actively maintained port.
 
 
 
 a config that mimics the defaults would look like this
 sctdrc
 ```
-SUMAND=5060
-INCREMENT=2
-UPDATE=60
+TEMP_MIN=4500
+TEMP_MAX=6500
+INTERVAL=60
 ```
