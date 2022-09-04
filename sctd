@@ -39,6 +39,7 @@ loadConfig () {
 # use the right sct executable
 SCT=$(command -v sct)
 [ -z "$SCT" ] && SCT=$(command -v xsct)
+[ -z "$SCT" ] && SCT=$(command -v waysct)
 
 if [ ! -e "$SCT" ]; then
     echo "Please install sct!"
