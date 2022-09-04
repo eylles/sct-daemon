@@ -18,14 +18,23 @@
 #config file
 CONFIG="${XDG_CONFIG_HOME:-~/.config}/sctd/sctdrc"
 
-# defaults
-# default value of max temp is same as the default screen color temp of x11
-TEMP_MIN=4500
-TEMP_MAX=6500
-INTERVAL=60
+loadConfig () {
+    # defaults, in case config doesn't contain them
+    # default value of max temp is same as the default screen color temp of x11
+    TEMP_MIN=4500
+    TEMP_MAX=6500
+    INTERVAL=60
 
-# load config if it exists
-[ -f "$CONFIG" ] && . "$CONFIG"
+    # load config if it exists
+    [ -f "$CONFIG" ] && . "$CONFIG"
+
+    # calculate increment
+    INCREMENT=$(( (TEMP_MAX - TEMP_MIN) / 720 ))
+    # 12 hours is 720 minutes
+
+    INTERVAL=$(( INTERVAL * 10 ))
+    [ "$DBGOUT" = 1 ] && echo "loaded config"
+}
 
 # use the right sct executable
 SCT=$(command -v sct)
@@ -35,10 +44,6 @@ if [ ! -e "$SCT" ]; then
     echo "Please install sct!"
     exit 1;
 fi
-
-# calculate increment
-INCREMENT=$(( (TEMP_MAX - TEMP_MIN) / 720 ))
-# 12 hours is 720 minutes
 
 # set HM var to current time of the day in minutes
 setHM () {
@@ -71,6 +76,13 @@ tick() {
     $SCT $TEMP
 }
 
+hupHandler () {
+    loadConfig
+    tick
+}
+
+trap hupHandler HUP
+
 TOGGLE_STATE=0
 
 toggleSwitch () {
@@ -91,6 +103,8 @@ while [ "$#" -gt 0 ]; do
     esac
     shift
 done
+
+loadConfig
 
 if [ "$ONESHOT" = 1 ]; then
     tick
