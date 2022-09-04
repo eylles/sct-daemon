@@ -26,7 +26,9 @@ sct or xsct should be in the repos of most distros, in the case of linux xsct
  is reccomended as it is the actively maintained port.
 
 [sct](https://github.com/0mp/sct) the freebsd port of sct
+
 [xsct](https://github.com/faf0/sct) reccomended on linux
+
 [go-sct](https://github.com/d4l3k/go-sct) a go port of sct, provides waysct for wayland
 
 a config that mimics the defaults would look like this
