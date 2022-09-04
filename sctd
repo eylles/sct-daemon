@@ -57,11 +57,32 @@ setTEMP() {
 
 tick() {
     setHM
-    setTEMP
+    [ "$TOGGLE_STATE" = 1 ] && SET_TEMP=max
+    [ "$TOGGLE_STATE" = 0 ] && SET_TEMP=dyn
+    [ "$DBGOUT" = 1 ] && echo "$SET_TEMP"
+    case "$SET_TEMP" in
+        max) TEMP="$TEMP_MAX" ;;
+        dyn) setTEMP ;;
+        min) TEMP="$TEMP_MIN" ;;
+    esac
+    
     [ "$DBGOUT" = 1 ] && echo $HM
     [ "$DBGOUT" = 1 ] && echo $TEMP
     $SCT $TEMP
 }
+
+TOGGLE_STATE=0
+
+toggleSwitch () {
+    case "$TOGGLE_STATE" in
+        0) TOGGLE_STATE=1 ;;
+        1) TOGGLE_STATE=0 ;;
+    esac
+    [ "$DBGOUT" = 1 ] && echo "$TOGGLE_STATE"
+    tick
+}
+
+trap toggleSwitch USR1
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -74,8 +95,14 @@ done
 if [ "$ONESHOT" = 1 ]; then
     tick
 else
+    count=0
+    tick
     while true; do
-        tick
-        sleep "$INTERVAL"
+        if [ "$count" = "$INTERVAL" ]; then
+            tick
+            count=0
+        fi
+        count=$(( count + 1 ))
+        sleep 0.1
     done
 fi
