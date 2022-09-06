@@ -29,7 +29,7 @@ sct or xsct should be in the repos of most distros, in the case of linux xsct
 
 [xsct](https://github.com/faf0/sct) reccomended on linux
 
-[go-sct](https://github.com/d4l3k/go-sct) a go port of sct, provides waysct for wayland
+[go-sct](https://github.com/d4l3k/go-sct) a go port of sct, provides support fot wayland (waysct)
 
 a config that mimics the defaults would look like this
 sctdrc
