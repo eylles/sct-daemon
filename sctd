@@ -73,7 +73,7 @@ tick() {
     # 0 will us the  dynamically calculated value
     [ "$TOGGLE_STATE" = 1 ] && SET_TEMP=max
     [ "$TOGGLE_STATE" = 0 ] && SET_TEMP=dyn
-    [ "$DBGOUT" = 1 ] && echo "$SET_TEMP"
+    [ "$DBGOUT" = 1 ] && echo "temp setting: $SET_TEMP"
     # temp min is an option here but currently unused
     case "$SET_TEMP" in
         max) TEMP="$TEMP_MAX" ;;
