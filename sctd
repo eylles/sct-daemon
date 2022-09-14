@@ -32,8 +32,9 @@ loadConfig () {
     INCREMENT=$(( (TEMP_MAX - TEMP_MIN) / 720 ))
     # 12 hours is 720 minutes
 
+    # we cycle 10 times per second, so the interval has to be scaled
     INTERVAL=$(( INTERVAL * 10 ))
-    [ "$DBGOUT" = 1 ] && echo "loaded config"
+    [ "$DBGOUT" = 1 ] && echo "loaded config: $CONFIG"
 }
 
 # use the right sct executable
@@ -53,7 +54,9 @@ setHM () {
     HM=$((H*60 + M))
 }
 
+# calculate temperature according to current time
 setTEMP() {
+    # if time is above mid day 12:00
     if [ $HM -gt 720 ]; then
         TEMP=$(( TEMP_MIN + INCREMENT * (1440 - HM) ))
     else
@@ -61,19 +64,25 @@ setTEMP() {
     fi
 }
 
+# set color temperature
 tick() {
+    # run setHM for current time
     setHM
+    # check the state of the toggle
+    # 1 will use the max temperature
+    # 0 will us the  dynamically calculated value
     [ "$TOGGLE_STATE" = 1 ] && SET_TEMP=max
     [ "$TOGGLE_STATE" = 0 ] && SET_TEMP=dyn
     [ "$DBGOUT" = 1 ] && echo "$SET_TEMP"
+    # temp min is an option here but currently unused
     case "$SET_TEMP" in
         max) TEMP="$TEMP_MAX" ;;
         dyn) setTEMP ;;
         min) TEMP="$TEMP_MIN" ;;
     esac
     
-    [ "$DBGOUT" = 1 ] && echo $HM
-    [ "$DBGOUT" = 1 ] && echo $TEMP
+    [ "$DBGOUT" = 1 ] && echo "time is: $HM"
+    [ "$DBGOUT" = 1 ] && echo "temperature is: $TEMP"
     $SCT $TEMP
 }
 
@@ -82,6 +91,7 @@ hupHandler () {
     tick
 }
 
+# get signal HUP
 trap hupHandler HUP
 
 TOGGLE_STATE=0
@@ -91,33 +101,44 @@ toggleSwitch () {
         0) TOGGLE_STATE=1 ;;
         1) TOGGLE_STATE=0 ;;
     esac
-    [ "$DBGOUT" = 1 ] && echo "$TOGGLE_STATE"
+    [ "$DBGOUT" = 1 ] && echo "toggle state: $TOGGLE_STATE"
     tick
 }
 
+# get signal USR1
 trap toggleSwitch USR1
 
+# input parsing
 while [ "$#" -gt 0 ]; do
     case "$1" in
         debug)   DBGOUT=1  ;;
         oneshot) ONESHOT=1 ;;
+        *) echo "${0}: error, invalid argument: ${1}" ;;
     esac
     shift
 done
 
 loadConfig
 
+# do we run as a one shot?
 if [ "$ONESHOT" = 1 ]; then
     tick
 else
     count=0
+    # firs color temp change
     tick
     while true; do
+        # is the count of cycle iterations the same as the interval?
         if [ "$count" = "$INTERVAL" ]; then
             tick
+            # reset the count to 0
             count=0
         fi
+        # ingrement the count
         count=$(( count + 1 ))
+        # the duty cycle of this daemon is 10 iterations per second
+        # this is fast enough to feel responsive to signales, yet not hog
+        # resources, mainly cpu
         sleep 0.1
     done
 fi
