@@ -86,6 +86,17 @@ tick() {
     $SCT $TEMP
 }
 
+outHandler () {
+    NO_CONTINUE=1
+    [ "$DBGOUT" = 1 ] && echo "exiting on signal: $1"
+    [ "$DBGOUT" = 1 ] && echo "temperature is: $TEMP_MAX"
+    $SCT $TEMP_MAX
+}
+
+# handle unexpected exits and termination
+trap 'outHandler "INT"' INT
+trap 'outHandler "TERM"' TERM
+
 hupHandler () {
     loadConfig
     tick
@@ -117,6 +128,7 @@ while [ "$#" -gt 0 ]; do
     esac
     shift
 done
+[ "$DBGOUT" = 1 ] && echo "${0}"
 
 loadConfig
 
@@ -127,7 +139,7 @@ else
     count=0
     # firs color temp change
     tick
-    while true; do
+    while [ -z "$NO_CONTINUE" ]; do
         # is the count of cycle iterations the same as the interval?
         if [ "$count" = "$INTERVAL" ]; then
             tick
