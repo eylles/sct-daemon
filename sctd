@@ -32,7 +32,9 @@ unfloat_num() {
     fractional=${float_num##*.}
     fraclen=${#fractional}
     divider=10
+    # adjust the divider to lenght of fractional digits
     [ "$fraclen" -ge 2 ] && divider="$divider"0
+    # trim the fractional to 2 digits
     if [ "$fraclen" -gt 2 ]; then
         chars_to_trim=$((fraclen-2))
         num_pattern=[0-9]
@@ -42,17 +44,19 @@ unfloat_num() {
             chars_pattern="$chars_pattern""$num_pattern"
             count=$((count+1))
         done
+        # remove extra fractional digits
         fractional="${fractional%%$chars_pattern}"
     fi
     assembled="$whole""$fractional"
-    scaled60="$((assembled*60/divider))"
-    printf '%s\n' "$scaled60"
+    # math
+    scaled="$((assembled*60/divider))"
+    printf '%s\n' "$scaled"
 }
 
 scale_time() {
     result=0
     case "$1" in
-        *[0-9]) # nothing to do here, just copy
+        *[0-9]) # just pass the num
                 if is_int "$1"; then
                     result="$1"
                 fi
@@ -115,12 +119,14 @@ loadConfig () {
         is_int "$TEMP_MAX" || TEMP_MAX="$DEF_TEMP_MAX"
     fi
     [ "$DBGOUT" = 1 ] && echo "temp MAX: $TEMP_MAX"
+
     # INTERVAL
     if [ -z "$INTERVAL" ]; then
         INTERVAL="$DEF_INTERVAL"
     else
         INTERVAL=$(scale_time $INTERVAL)
     fi
+    # cut off interval to 60 seconds
     if [ "$INTERVAL" -lt "$DEF_INTERVAL" ]; then
         INTERVAL="$DEF_INTERVAL"
     fi
