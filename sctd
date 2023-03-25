@@ -112,6 +112,7 @@ loadConfig () {
         is_int "$TEMP_MIN" || TEMP_MIN="$DEF_TEMP_MIN"
     fi
     [ "$DBGOUT" = 1 ] && echo "temp MIN: $TEMP_MIN"
+
     # TEMP_MAX
     if [ -z "$TEMP_MAX" ]; then
         TEMP_MAX="$DEF_TEMP_MAX"
@@ -183,7 +184,7 @@ tick() {
         dyn) setTEMP ;;
         min) TEMP="$TEMP_MIN" ;;
     esac
-    
+
     [ "$DBGOUT" = 1 ] && echo "time is: $HM"
     [ "$DBGOUT" = 1 ] && echo "temperature is: $TEMP"
     $SCT $TEMP
