@@ -18,15 +18,113 @@
 #config file
 CONFIG="${XDG_CONFIG_HOME:-~/.config}/sctd/sctdrc"
 
+is_int() {
+    printf %d "$1" >/dev/null 2>&1
+}
+
+is_float() {
+    [ -z "${1##*.*}" ] && printf %f "$1" >/dev/null 2>&1
+}
+
+unfloat_num() {
+    float_num="$1"
+    whole=${float_num%%.*}
+    fractional=${float_num##*.}
+    fraclen=${#fractional}
+    divider=10
+    [ "$fraclen" -ge 2 ] && divider="$divider"0
+    if [ "$fraclen" -gt 2 ]; then
+        chars_to_trim=$((fraclen-2))
+        num_pattern=[0-9]
+        # build pattern
+        count=1
+        while [ "$count" -le "$chars_to_trim" ]; do
+            chars_pattern="$chars_pattern""$num_pattern"
+            count=$((count+1))
+        done
+        fractional="${fractional%%$chars_pattern}"
+    fi
+    assembled="$whole""$fractional"
+    scaled60="$((assembled*60/divider))"
+    printf '%s\n' "$scaled60"
+}
+
+scale_time() {
+    result=0
+    case "$1" in
+        *[0-9]) # nothing to do here, just copy
+                if is_int "$1"; then
+                    result="$1"
+                fi
+                ;;
+        *[Ss])  # just strip last char
+                stripped=${1%%[Ss]}
+                if is_int "$stripped"; then
+                    result="$stripped"
+                fi
+                ;;
+        *[Mm])  # scale to seconds
+                stripped=${1%%[Mm]}
+                if is_float "$stripped"; then
+                    unfloated=$(unfloat_num $stripped)
+                    result="$unfloated"
+                else
+                  if is_int "$stripped"; then
+                      result="$((stripped*60))"
+                  fi
+                fi
+            ;;
+        *[Hh])  # scale to seconds
+                stripped=${1%%[Hh]}
+                if is_float "$stripped"; then
+                    unfloated=$(unfloat_num $stripped)
+                    result="$((unfloated*60))"
+                else
+                  if is_int "$stripped"; then
+                      result="$((stripped*60*60))"
+                  fi
+                fi
+            ;;
+    esac
+    printf '%s\n' "$result"
+}
+
 loadConfig () {
     # defaults, in case config doesn't contain them
     # default value of max temp is same as the default screen color temp of x11
-    TEMP_MIN=4500
-    TEMP_MAX=6500
-    INTERVAL=60
+    DEF_TEMP_MIN=4500
+    DEF_TEMP_MAX=6500
+    DEF_INTERVAL=60
 
     # load config if it exists
     [ -f "$CONFIG" ] && . "$CONFIG"
+    [ "$DBGOUT" = 1 ] && echo "loaded config: $CONFIG"
+
+    # check values
+    # TEMP_MIN
+    if [ -z "$TEMP_MIN" ]; then
+        TEMP_MIN="$DEF_TEMP_MIN"
+    else
+        is_int "$TEMP_MIN" || TEMP_MIN="$DEF_TEMP_MIN"
+    fi
+    [ "$DBGOUT" = 1 ] && echo "temp MIN: $TEMP_MIN"
+    # TEMP_MAX
+    if [ -z "$TEMP_MAX" ]; then
+        TEMP_MAX="$DEF_TEMP_MAX"
+    else
+        is_int "$TEMP_MAX" || TEMP_MAX="$DEF_TEMP_MAX"
+    fi
+    [ "$DBGOUT" = 1 ] && echo "temp MAX: $TEMP_MAX"
+    # INTERVAL
+    if [ -z "$INTERVAL" ]; then
+        INTERVAL="$DEF_INTERVAL"
+    else
+        INTERVAL=$(scale_time $INTERVAL)
+    fi
+    if [ "$INTERVAL" -lt "$DEF_INTERVAL" ]; then
+        INTERVAL="$DEF_INTERVAL"
+    fi
+    [ "$DBGOUT" = 1 ] && echo "update INTERVAL: $INTERVAL"
 
     # calculate increment
     INCREMENT=$(( (TEMP_MAX - TEMP_MIN) / 720 ))
@@ -34,7 +132,6 @@ loadConfig () {
 
     # we cycle 10 times per second, so the interval has to be scaled
     INTERVAL=$(( INTERVAL * 10 ))
-    [ "$DBGOUT" = 1 ] && echo "loaded config: $CONFIG"
 }
 
 # use the right sct executable
