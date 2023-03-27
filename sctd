@@ -73,9 +73,9 @@ scale_time() {
                     unfloated=$(unfloat_num $stripped)
                     result="$unfloated"
                 else
-                  if is_int "$stripped"; then
-                      result="$((stripped*60))"
-                  fi
+                    if is_int "$stripped"; then
+                        result="$((stripped*60))"
+                    fi
                 fi
             ;;
         *[Hh])  # scale to seconds
@@ -84,9 +84,9 @@ scale_time() {
                     unfloated=$(unfloat_num $stripped)
                     result="$((unfloated*60))"
                 else
-                  if is_int "$stripped"; then
-                      result="$((stripped*60*60))"
-                  fi
+                    if is_int "$stripped"; then
+                        result="$((stripped*60*60))"
+                    fi
                 fi
             ;;
     esac
