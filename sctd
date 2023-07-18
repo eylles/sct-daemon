@@ -95,8 +95,8 @@ scale_time() {
 
 loadConfig () {
     # defaults, in case config doesn't contain them
-    # default value of max temp is same as the default screen color temp of x11
     DEF_TEMP_MIN=4500
+    # default value of max temp is same as the default screen color temp of x11
     DEF_TEMP_MAX=6500
     DEF_INTERVAL=60
 
