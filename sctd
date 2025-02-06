@@ -228,7 +228,10 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         debug)   DBGOUT=1  ;;
         oneshot) ONESHOT=1 ;;
-        *) echo "${0}: error, invalid argument: ${1}" ;;
+        *)
+            echo "${0}: error, invalid argument: ${1}"
+            exit 1
+        ;;
     esac
     shift
 done
