@@ -15,6 +15,8 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+myname="${0##*/}"
+
 #config file
 CONFIG="${XDG_CONFIG_HOME:-~/.config}/sctd/sctdrc"
 
@@ -229,13 +231,13 @@ while [ "$#" -gt 0 ]; do
         debug)   DBGOUT=1  ;;
         oneshot) ONESHOT=1 ;;
         *)
-            echo "${0}: error, invalid argument: ${1}"
+            echo "${myname}: error, invalid argument: ${1}"
             exit 1
         ;;
     esac
     shift
 done
-[ "$DBGOUT" = 1 ] && echo "${0}"
+[ "$DBGOUT" = 1 ] && echo "${myname}"
 
 loadConfig
 
