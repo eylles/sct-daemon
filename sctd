@@ -225,14 +225,45 @@ toggleSwitch () {
 # get signal USR1
 trap toggleSwitch USR1
 
+show_usage () {
+    if [ -n "$2" ]; then
+        printf '%s: %s\n' "$myname" "$2"
+    fi
+    printf '%s:\n' "Usage"
+    printf '    %s\n' "${myname}: [OPTIONS]"
+    if [ -n "$1" ]; then
+        exit "$1"
+    fi
+
+}
+
+show_help () {
+    code=0
+    if [ -n "$1" ]; then
+        code="$1"
+    fi
+    printf '%s:\n' "$myname"
+    show_usage
+    printf '%s\n'   "Options:"
+    printf ' %s'    "-d, debug"
+    printf '\t%s\n' "print out debug info."
+    printf ' %s'    "-o, oneshot"
+    printf '\t%s\n' "exits after changing color temp once."
+    printf ' %s'    "-h, --help"
+    printf '\t%s\n' "show this help message."
+    exit "$code"
+}
+
 # input parsing
 while [ "$#" -gt 0 ]; do
     case "$1" in
-        debug)   DBGOUT=1  ;;
-        oneshot) ONESHOT=1 ;;
+        -d|debug)   DBGOUT=1  ;;
+        -o|oneshot) ONESHOT=1 ;;
+        -h|help|--help)
+            show_help 0
+        ;;
         *)
-            echo "${myname}: error, invalid argument: ${1}"
-            exit 1
+            show_usage 1 "error, invalid argument: ${1}"
         ;;
     esac
     shift
