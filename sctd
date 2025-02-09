@@ -15,6 +15,9 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+#### a daemon built around sct to automatically adjust the screen color ####
+#### temperature through the day.                                       ####
+
 myname="${0##*/}"
 
 #config file
@@ -237,12 +240,18 @@ show_usage () {
 
 }
 
+# return type: string
+get_header_comment () {
+    sed -n '/^#### /p' "$0" | sed 's/^#### /    / ; s/ ####$//'
+}
+
 show_help () {
     code=0
     if [ -n "$1" ]; then
         code="$1"
     fi
     printf '%s:\n' "$myname"
+    get_header_comment
     show_usage
     printf '%s\n'   "Options:"
     printf ' %s'    "-d, debug"
