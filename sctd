@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Copyright (c) 2017 Aaron Bieber <aaron@bolddaemon.com>
-# Copryright (c) 2017 Inokentiy Babushkin <twk@twki.de>
+# Copyright (c) 2017 Inokentiy Babushkin <twk@twki.de>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -15,8 +15,10 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+############################################################################
 #### a daemon built around sct to automatically adjust the screen color ####
 #### temperature through the day.                                       ####
+############################################################################
 
 myname="${0##*/}"
 
@@ -37,7 +39,7 @@ unfloat_num() {
     fractional=${float_num##*.}
     fraclen=${#fractional}
     divider=10
-    # adjust the divider to lenght of fractional digits
+    # adjust the divider to length of fractional digits
     [ "$fraclen" -ge 2 ] && divider="$divider"0
     # trim the fractional to 2 digits
     if [ "$fraclen" -gt 2 ]; then
@@ -61,39 +63,43 @@ unfloat_num() {
 scale_time() {
     result=0
     case "$1" in
-        *[0-9]) # just pass the num
-                if is_int "$1"; then
-                    result="$1"
-                fi
-                ;;
-        *[Ss])  # just strip last char
-                stripped=${1%%[Ss]}
+        *[0-9])
+            # just pass the num
+            if is_int "$1"; then
+                result="$1"
+            fi
+        ;;
+        *[Ss])
+            # just strip last char
+            stripped=${1%%[Ss]}
+            if is_int "$stripped"; then
+                result="$stripped"
+            fi
+        ;;
+        *[Mm])
+            # scale to seconds
+            stripped=${1%%[Mm]}
+            if is_float "$stripped"; then
+                unfloated=$(unfloat_num $stripped)
+                result="$unfloated"
+            else
                 if is_int "$stripped"; then
-                    result="$stripped"
+                    result="$((stripped*60))"
                 fi
-                ;;
-        *[Mm])  # scale to seconds
-                stripped=${1%%[Mm]}
-                if is_float "$stripped"; then
-                    unfloated=$(unfloat_num $stripped)
-                    result="$unfloated"
-                else
-                    if is_int "$stripped"; then
-                        result="$((stripped*60))"
-                    fi
+            fi
+        ;;
+        *[Hh])
+            # scale to seconds
+            stripped=${1%%[Hh]}
+            if is_float "$stripped"; then
+                unfloated=$(unfloat_num $stripped)
+                result="$((unfloated*60))"
+            else
+                if is_int "$stripped"; then
+                    result="$((stripped*60*60))"
                 fi
-            ;;
-        *[Hh])  # scale to seconds
-                stripped=${1%%[Hh]}
-                if is_float "$stripped"; then
-                    unfloated=$(unfloat_num $stripped)
-                    result="$((unfloated*60))"
-                else
-                    if is_int "$stripped"; then
-                        result="$((stripped*60*60))"
-                    fi
-                fi
-            ;;
+            fi
+        ;;
     esac
     printf '%s\n' "$result"
 }
@@ -295,10 +301,10 @@ else
             # reset the count to 0
             count=0
         fi
-        # ingrement the count
+        # increment the count
         count=$(( count + 1 ))
         # the duty cycle of this daemon is 10 iterations per second
-        # this is fast enough to feel responsive to signales, yet not hog
+        # this is fast enough to feel responsive to signals, yet not hog
         # resources, mainly cpu
         sleep 0.1
     done
