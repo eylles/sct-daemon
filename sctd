@@ -23,7 +23,7 @@
 myname="${0##*/}"
 
 #config file
-CONFIG="${XDG_CONFIG_HOME:-~/.config}/sctd/sctdrc"
+CONFIG="${XDG_CONFIG_HOME:-${HOME}/.config}/sctd/sctdrc"
 
 is_int() {
     printf %d "$1" >/dev/null 2>&1
